@@ -3,66 +3,355 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dagelijkse Beursupdate 24 juni 2026</title>
+<title>Dagelijkse beursupdate</title>
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1e293b;
-       max-width:640px;margin:0 auto;padding:12px;background:#f8fafc}
-  .header{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;
-           padding:22px 20px;border-radius:10px;margin-bottom:20px}
-  .header h1{margin:0 0 4px;font-size:20px}
-  .header p{margin:0;opacity:.85;font-size:13px}
-  .indices{display:flex;gap:10px;margin-bottom:22px}
-  .index-card{flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:8px;
-              padding:14px;text-align:center}
-  .index-name{font-size:10px;color:#64748b;text-transform:uppercase;
-               letter-spacing:.06em;margin-bottom:4px}
-  .index-value{font-size:17px;font-weight:700;color:#1e293b}
-  .index-change{font-size:12px;margin-top:3px;font-weight:600}
-  h2{color:#1e3a5f;border-bottom:2px solid #2563eb;padding-bottom:7px;
-      font-size:15px;margin:22px 0 14px}
-  .card{background:#fff;border-left:4px solid #2563eb;border-radius:4px;
-         padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-  .card-title{font-weight:700;color:#1e293b;font-size:14px;margin-bottom:6px}
-  .card-body{color:#475569;font-size:13px;margin-bottom:6px}
-  .card-meta{color:#94a3b8;font-size:11px}
-  .card-meta a{color:#2563eb;text-decoration:none}
-  .badge{background:#2563eb;color:#fff;padding:2px 7px;border-radius:4px;
-          font-size:11px;font-weight:700}
-  .pct{font-size:11px;color:#94a3b8;margin-left:6px}
-  .analysis{background:#eff6ff;border-radius:4px;padding:10px 12px;
-             margin:8px 0;font-size:12px;line-height:1.65}
-  .a-row{margin-bottom:4px}
-  .a-label{font-weight:700;color:#1d4ed8}
-  .empty{color:#94a3b8;font-style:italic;font-size:13px}
-  .footer{color:#94a3b8;font-size:11px;margin-top:24px;padding-top:12px;
-           border-top:1px solid #e2e8f0;text-align:center}
+body{font-family:Arial,Helvetica,sans-serif;background:#e8e8e8;margin:0;padding:16px}
+.wrap{max-width:680px;margin:0 auto;background:#fff;border-radius:4px;overflow:hidden}
+.header{background:#1c2340;color:#fff;padding:20px 24px}
+.header h1{margin:0 0 4px;font-size:20px;font-weight:700;letter-spacing:-.3px}
+.header p{margin:0;font-size:12px;opacity:.65}
+.indices{display:table;width:100%;border-collapse:collapse;border-bottom:2px solid #eee}
+.ix{display:table-cell;padding:16px 20px;border-right:1px solid #eee;vertical-align:top}
+.ix:last-child{border-right:none}
+.ix-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.ix-val{font-size:21px;font-weight:700;color:#1c2340;letter-spacing:-.5px}
+.ix-chg{font-size:12px;font-weight:600;margin-top:3px}
+.green{color:#1d8348}.red{color:#c0392b}
+.content{padding:4px 24px 24px}
+h2{font-size:10px;font-weight:700;letter-spacing:.12em;color:#999;
+   text-transform:uppercase;margin:22px 0 10px;
+   border-bottom:1px solid #eee;padding-bottom:7px}
+.news-item{margin-bottom:14px}
+.news-title{font-weight:700;color:#1c2340;font-size:13px;margin-bottom:4px}
+.news-body{color:#444;font-size:12px;line-height:1.55;margin-bottom:4px}
+.news-src{color:#aaa;font-size:11px}
+.news-src a{color:#aaa;text-decoration:none}
+.news-src a:hover{text-decoration:underline}
+table.pt{width:100%;border-collapse:collapse;font-size:11px}
+table.pt th{text-align:left;font-size:9px;font-weight:700;color:#aaa;
+            text-transform:uppercase;letter-spacing:.08em;
+            border-bottom:2px solid #eee;padding:5px 6px 5px 0}
+table.pt td{padding:7px 6px 7px 0;border-bottom:1px solid #f4f4f4;vertical-align:top}
+.tbadge{display:inline-block;color:#fff;font-size:9px;font-weight:700;
+        padding:3px 6px;border-radius:3px;white-space:nowrap}
+.sent{display:inline-block;font-size:9px;font-weight:700;
+      padding:3px 6px;border-radius:3px;white-space:nowrap}
+.td-name{color:#333;font-weight:500;white-space:nowrap}
+.td-pct{color:#777;white-space:nowrap}
+.td-wat{color:#333;font-size:11px;line-height:1.4;max-width:200px}
+.td-adv{color:#333;font-size:11px;line-height:1.4;max-width:160px}
+.btn-link{display:inline-block;font-size:9px;color:#555;border:1px solid #d0d0d0;
+           padding:3px 7px;border-radius:3px;text-decoration:none;white-space:nowrap}
+.btn-link:hover{background:#f4f4f4}
+.watchbox{background:#f8f9fa;border-left:4px solid #1c2340;
+           padding:14px 16px;margin-top:8px;border-radius:0 4px 4px 0}
+.watch-item{font-size:12px;color:#333;line-height:1.55;margin-bottom:10px}
+.watch-item:last-child{margin-bottom:0}
+.watch-ticker{font-weight:700;color:#1c2340}
+.footer{border-top:1px solid #eee;padding:13px 24px;font-size:11px;
+        color:#bbb;text-align:center}
 </style>
 </head>
 <body>
+<div class="wrap">
+
 <div class="header">
-  <h1>📈 Dagelijkse Beursupdate</h1>
-  <p>24 juni 2026</p>
+  <h1>Dagelijkse beursupdate</h1>
+  <p>woensdag 24 juni 2026</p>
 </div>
 
 <div class="indices">
-<div class="index-card"><div class="index-name">S&P 500</div><div class="index-value">7,365.46</div><div class="index-change" style="color:#dc2626">▼ 1.44%</div></div><div class="index-card"><div class="index-name">Nasdaq</div><div class="index-value">25,587.04</div><div class="index-change" style="color:#dc2626">▼ 2.21%</div></div><div class="index-card"><div class="index-name">AEX</div><div class="index-value">1,065.63</div><div class="index-change" style="color:#dc2626">▼ 1.60%</div></div>
+<div class="ix"><div class="ix-label">S&P 500</div><div class="ix-val">7.347,00</div><div class="ix-chg red">▼ 0,25%</div></div><div class="ix"><div class="ix-label">NASDAQ</div><div class="ix-val">25.442,94</div><div class="ix-chg red">▼ 0,56%</div></div><div class="ix"><div class="ix-label">AEX</div><div class="ix-val">1.065,63</div><div class="ix-chg red">▼ 1,60%</div></div>
 </div>
 
-<h2>📰 Marktnieuws</h2>
-<div class="card"><div class="card-title">Why U.K. stocks can’t escape the shadow of a ‘lost decade’ following Brexit</div><div class="card-body">Why U.K. stocks can’t escape the shadow of a ‘lost decade’ following Brexit</div><div class="card-meta">MarketWatch &nbsp;·&nbsp; <a href="https://www.marketwatch.com/story/why-u-k-stocks-cant-escape-the-shadow-of-a-lost-decade-following-brexit-e92650aa?mod=mw_rss_topstories">Lees meer →</a></div></div>
-<div class="card"><div class="card-title">‘I’m scared of making a huge financial mistake’: I gave my brother half of my $1.5 million home. Can he force me to sell?</div><div class="card-body">‘I’m scared of making a huge financial mistake’: I gave my brother half of my $1.5 million home. Can he force me to sell?</div><div class="card-meta">MarketWatch &nbsp;·&nbsp; <a href="https://www.marketwatch.com/story/im-scared-of-making-a-huge-financial-mistake-i-gave-my-brother-half-of-my-1-5-million-home-can-he-force-me-to-sell-1b112b73?mod=mw_rss_topstories">Lees meer →</a></div></div>
-<div class="card"><div class="card-title">Coming to America: SK Hynix plans depository receipt listing on the Nasdaq</div><div class="card-body">Coming to America: SK Hynix plans depository receipt listing on the Nasdaq</div><div class="card-meta">MarketWatch &nbsp;·&nbsp; <a href="https://www.marketwatch.com/story/coming-to-america-sk-hynix-plans-depository-receipt-listing-on-the-nasdaq-c3c9695e?mod=mw_rss_topstories">Lees meer →</a></div></div>
-<div class="card"><div class="card-title">Paris Hilton shows off lavish ‘doggy mansion’ at $63 million estate</div><div class="card-body">Paris Hilton shows off lavish ‘doggy mansion’ at $63 million estate</div><div class="card-meta">MarketWatch &nbsp;·&nbsp; <a href="https://www.marketwatch.com/story/paris-hilton-shows-off-lavish-doggy-mansion-at-63-million-estate-99c1c678?mod=mw_rss_topstories">Lees meer →</a></div></div>
-<div class="card"><div class="card-title">World’s hottest stock market rallies after 10% plunge</div><div class="card-body">World’s hottest stock market rallies after 10% plunge</div><div class="card-meta">MarketWatch &nbsp;·&nbsp; <a href="https://www.marketwatch.com/story/worlds-hottest-stock-market-rallies-after-10-plunge-156f47fa?mod=mw_rss_topstories">Lees meer →</a></div></div>
+<div class="content">
 
-<h2>🎯 Portfolio Nieuws</h2>
-<div class="card"><div class="card-title"><span class="badge">NVDA</span> Nvidia<span class="pct">(3.8% portfolio)</span></div><div class="card-body">S.Korea chip giant SK hynix seeks $29 bn in Nasdaq listing: regulatory filing</div><div class="analysis"></div><div class="card-meta"><a href="https://finance.yahoo.com/markets/stocks/articles/korea-chip-giant-sk-hynix-095930760.html?.tsrc=rss">Lees originele artikel →</a></div></div>
-<div class="card"><div class="card-title"><span class="badge">AMZN</span> Amazon<span class="pct">(2.4% portfolio)</span></div><div class="card-body">Asda signs retail media partnership with Amazon Ads</div><div class="analysis"></div><div class="card-meta"><a href="https://www.retail-insight-network.com/news/asda-retail-media-partnership-amazon-ads/?.tsrc=rss">Lees originele artikel →</a></div></div>
-<div class="card"><div class="card-title"><span class="badge">NKE</span> Nike<span class="pct">(1.9% portfolio)</span></div><div class="card-body">The Safest Way to Buy Authentic Designer Eyewear Online: Inside the Eleganzo Inc & Marchon Partnership</div><div class="analysis"></div><div class="card-meta"><a href="https://finance.yahoo.com/media-advertising/articles/safest-way-buy-authentic-designer-222500900.html?.tsrc=rss">Lees originele artikel →</a></div></div>
-<div class="card"><div class="card-title"><span class="badge">NVO</span> Novo Nordisk ADR<span class="pct">(1.5% portfolio)</span></div><div class="card-body">VKTX Stock Clocks Best Day In Nearly 3 Months On Obesity Pipeline Optimism, Buyout Speculation</div><div class="analysis"></div><div class="card-meta"><a href="https://stocktwits.com/news-articles/markets/equity/vktx-stock-clocks-best-day-in-nearly-3-months-on-obesity-pipeline-optimism-buyout-speculation/cZKwkGOR7Od?.tsrc=rss">Lees originele artikel →</a></div></div>
+<h2>Marktoverzicht</h2>
+<div class="news-item"><div class="news-title">Oil prices fall back to preconflict levels, but Trump’s comments on Iran show that supply risks remain</div><div class="news-body">Oil prices fall back to preconflict levels, but Trump’s comments on Iran show that supply risks remain</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/u-s-oil-prices-fall-back-to-preconflict-levels-as-physical-flow-through-the-strait-of-hormuz-improves-d7c910c3?mod=mw_rss_topstories">lees meer</a></div></div>
+<div class="news-item"><div class="news-title">Inflation is about more than oil. These two hidden triggers could force a Fed rate hike.</div><div class="news-body">Inflation is about more than oil. These two hidden triggers could force a Fed rate hike.</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/inflation-is-about-more-than-oil-these-two-hidden-triggers-could-force-a-fed-rate-hike-d9fa393e?mod=mw_rss_topstories">lees meer</a></div></div>
+<div class="news-item"><div class="news-title">I want to leave everything to my sons, but I’m terrified they’ll give it to my ex-husband. How do I prevent this?</div><div class="news-body">I want to leave everything to my sons, but I’m terrified they’ll give it to my ex-husband. How do I prevent this?</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/i-want-to-leave-everything-to-my-sons-but-im-terrified-theyll-give-it-to-my-ex-husband-how-do-i-prevent-this-8cfc752c?mod=mw_rss_topstories">lees meer</a></div></div>
+<div class="news-item"><div class="news-title">Gas prices aren’t falling fast enough for Trump. Here’s when drivers can expect more relief.</div><div class="news-body">Gas prices aren’t falling fast enough for Trump. Here’s when drivers can expect more relief.</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/gas-prices-arent-falling-fast-enough-for-trump-heres-when-drivers-can-expect-more-relief-57db7038?mod=mw_rss_topstories">lees meer</a></div></div>
+<div class="news-item"><div class="news-title">‘It feels like a medical miracle’: How did a single QR code coupon cut my $618 Walgreens prescription to $15?</div><div class="news-body">‘It feels like a medical miracle’: How did a single QR code coupon cut my $618 Walgreens prescription to $15?</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/it-feels-like-a-medical-miracle-how-did-a-single-qr-code-coupon-cut-my-618-walgreens-prescription-to-15-524a1151?mod=mw_rss_topstories">lees meer</a></div></div>
+
+<h2>Portfolio &mdash; Materieel nieuws</h2>
+<table class="pt">
+<thead><tr>
+  <th>Ticker</th><th>Naam</th><th>%</th>
+  <th>Sentiment</th><th>Wat</th><th>Advies</th><th></th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><span class="tbadge" style="background:#1b4f72">VWRL</span></td>
+  <td class="td-name">VWRL (All-World ETF)</td>
+  <td class="td-pct">8,5%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#784212">COIN</span></td>
+  <td class="td-name">Coinbase</td>
+  <td class="td-pct">7,6%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">ADBE</span></td>
+  <td class="td-name">Adobe</td>
+  <td class="td-pct">5,7%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">GOOGL</span></td>
+  <td class="td-name">Alphabet</td>
+  <td class="td-pct">4,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">SMH</span></td>
+  <td class="td-name">VanEck Semiconductors</td>
+  <td class="td-pct">4,3%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">ESPO</span></td>
+  <td class="td-name">VanEck Gaming & Esports</td>
+  <td class="td-pct">3,9%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1e3a5f">NVDA</span></td>
+  <td class="td-name">Nvidia</td>
+  <td class="td-pct">3,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#b03a2e">VOW3</span></td>
+  <td class="td-name">Volkswagen</td>
+  <td class="td-pct">3,7%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#784212">NFLX</span></td>
+  <td class="td-name">Netflix</td>
+  <td class="td-pct">3,6%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">SHELL</span></td>
+  <td class="td-name">Shell</td>
+  <td class="td-pct">3,0%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#7d6608">ORCL</span></td>
+  <td class="td-name">Oracle</td>
+  <td class="td-pct">2,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#784212">PYPL</span></td>
+  <td class="td-name">PayPal</td>
+  <td class="td-pct">2,7%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1e3a5f">QLYS</span></td>
+  <td class="td-name">Qualys</td>
+  <td class="td-pct">2,7%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#7d6608">AMZN</span></td>
+  <td class="td-name">Amazon</td>
+  <td class="td-pct">2,4%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#784212">DIS</span></td>
+  <td class="td-name">Walt Disney</td>
+  <td class="td-pct">2,0%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#b03a2e">PLTR</span></td>
+  <td class="td-name">Palantir</td>
+  <td class="td-pct">1,9%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">NKE</span></td>
+  <td class="td-name">Nike</td>
+  <td class="td-pct">1,9%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="https://finance.yahoo.com/m/3e1f1a20-cf73-3704-8da8-b0e0b3f406c2/nike%E2%80%99s-new-cfo-won%E2%80%99t-speed-up.html?.tsrc=rss" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1b4f72">SBUX</span></td>
+  <td class="td-name">Starbucks</td>
+  <td class="td-pct">1,9%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">DUOL</span></td>
+  <td class="td-name">Duolingo</td>
+  <td class="td-pct">1,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1e3a5f">ULVR</span></td>
+  <td class="td-name">Unilever</td>
+  <td class="td-pct">1,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">NVO</span></td>
+  <td class="td-name">Novo Nordisk ADR</td>
+  <td class="td-pct">1,5%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">ALFEN</span></td>
+  <td class="td-name">Alfen</td>
+  <td class="td-pct">1,4%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">KO</span></td>
+  <td class="td-name">Coca-Cola</td>
+  <td class="td-pct">1,2%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#784212">NIO</span></td>
+  <td class="td-name">NIO ADR</td>
+  <td class="td-pct">0,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#1a5276">T</span></td>
+  <td class="td-name">AT&T</td>
+  <td class="td-pct">0,8%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#145a32">HPQ</span></td>
+  <td class="td-name">HP Inc</td>
+  <td class="td-pct">0,5%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">FIGMA</span></td>
+  <td class="td-name">Figma</td>
+  <td class="td-pct">0,4%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">PINS</span></td>
+  <td class="td-name">Pinterest</td>
+  <td class="td-pct">0,4%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="#" class="btn-link">bericht</a></td>
+</tr>
+<tr>
+  <td><span class="tbadge" style="background:#5b2c6f">SNAP</span></td>
+  <td class="td-name">Snap</td>
+  <td class="td-pct">0,3%</td>
+  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
+  <td class="td-wat">Geen materieel nieuws vandaag.</td>
+  <td class="td-adv">HOLD — Geen actie vereist.</td>
+  <td><a href="https://uk.finance.yahoo.com/news/youtube-settles-social-media-addiction-102800056.html?.tsrc=rss" class="btn-link">bericht</a></td>
+</tr>
+</tbody>
+</table>
+
+
+
+</div>
 
 <div class="footer">
-  <p>Update van 24 juni 2026 &nbsp;·&nbsp; Volgende update morgen om 08:00 CEST (werkdagen)</p>
+  Volgende update: morgen 08:00 CEST &nbsp;&bull;&nbsp; alfendirk@gmail.com
+</div>
+
 </div>
 </body>
 </html>
