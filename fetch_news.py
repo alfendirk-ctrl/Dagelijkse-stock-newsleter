@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Stap 1: haalt koersen (S&P 500, Nasdaq, AEX) en nieuws op.
+Stap 1: haalt koersen, sectordata, earnings-agenda en nieuws op.
 Slaat resultaat op in data/market_data.json voor de volgende stap.
 """
 
@@ -17,6 +17,21 @@ INDICES = {
     "sp500":  {"ticker": "^GSPC", "name": "S&P 500"},
     "nasdaq": {"ticker": "^IXIC", "name": "Nasdaq"},
     "aex":    {"ticker": "^AEX",  "name": "AEX"},
+}
+
+# SPDR sector ETFs (US market)
+SECTOR_ETFS = {
+    "Technologie":   "XLK",
+    "Communicatie":  "XLC",
+    "Cons. discr.":  "XLY",
+    "Financieel":    "XLF",
+    "Zorg":          "XLV",
+    "Industrie":     "XLI",
+    "Energie":       "XLE",
+    "Cons. basis":   "XLP",
+    "Grondstoffen":  "XLB",
+    "Vastgoed":      "XLRE",
+    "Nutsbedrijven": "XLU",
 }
 
 MARKET_FEEDS = [
@@ -44,10 +59,14 @@ def load_portfolio():
         return json.load(f)["portfolio"]
 
 
+def now_utc():
+    return datetime.now(timezone.utc)
+
+
 def fetch_index(ticker, name):
     try:
         hist = yf.Ticker(ticker).history(period="5d")
-        hist = hist[hist["Volume"] > 0]  # skip non-trading days
+        hist = hist[hist["Volume"] > 0]
         if len(hist) >= 2:
             prev, curr = hist["Close"].iloc[-2], hist["Close"].iloc[-1]
             change_pct = ((curr - prev) / prev) * 100
@@ -64,10 +83,83 @@ def fetch_index(ticker, name):
         return None
 
 
+def fetch_sector_performance():
+    """Fetch % change for each SPDR sector ETF."""
+    results = {}
+    tickers = list(SECTOR_ETFS.values())
+    try:
+        data = yf.download(tickers, period="2d", progress=False, auto_adjust=True)
+        close = data["Close"]
+        for name, etf in SECTOR_ETFS.items():
+            try:
+                col = close[etf].dropna()
+                if len(col) >= 2:
+                    chg = ((col.iloc[-1] - col.iloc[-2]) / col.iloc[-2]) * 100
+                    results[name] = {"etf": etf, "change_pct": round(float(chg), 2)}
+                elif len(col) == 1:
+                    results[name] = {"etf": etf, "change_pct": 0.0}
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"  Fout bij sectoren: {e}")
+    return results
+
+
+def fetch_earnings_calendar(portfolio, days_ahead=7):
+    """Fetch upcoming earnings dates for portfolio stocks."""
+    upcoming = []
+    today = now_utc().date()
+    cutoff = today + timedelta(days=days_ahead)
+
+    for pos in portfolio:
+        ticker = pos["ticker"]
+        try:
+            t = yf.Ticker(ticker)
+            cal = t.calendar
+            if cal is None:
+                continue
+
+            # yfinance returns calendar as dict or DataFrame depending on version
+            if hasattr(cal, "to_dict"):
+                cal = cal.to_dict()
+
+            # Try to extract earnings date
+            earn_date = None
+            if isinstance(cal, dict):
+                for key in ("Earnings Date", "earningsDate"):
+                    val = cal.get(key)
+                    if val is not None:
+                        if hasattr(val, "__iter__") and not isinstance(val, str):
+                            val = list(val)
+                            if val:
+                                val = val[0]
+                        if hasattr(val, "date"):
+                            earn_date = val.date()
+                        elif isinstance(val, str):
+                            try:
+                                earn_date = datetime.strptime(val[:10], "%Y-%m-%d").date()
+                            except Exception:
+                                pass
+                        break
+
+            if earn_date and today <= earn_date <= cutoff:
+                upcoming.append({
+                    "ticker": ticker,
+                    "company": pos["name"],
+                    "pct": pos["pct"],
+                    "date": earn_date.isoformat(),
+                    "days_away": (earn_date - today).days,
+                })
+        except Exception:
+            pass
+
+    upcoming.sort(key=lambda x: x["date"])
+    return upcoming
+
+
 def fetch_article(url):
     try:
-        r = requests.get(url, timeout=10,
-                         headers={"User-Agent": "Mozilla/5.0"})
+        r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
         r.encoding = "utf-8"
         soup = BeautifulSoup(r.content, "html.parser")
         for tag in soup(["script", "style"]):
@@ -76,10 +168,6 @@ def fetch_article(url):
         return text[:2500] if len(text) > 120 else None
     except Exception:
         return None
-
-
-def now_utc():
-    return datetime.now(timezone.utc)
 
 
 def fetch_market_news():
@@ -96,7 +184,7 @@ def fetch_market_news():
                     continue
                 title = re.sub(
                     r"\s*[-–]\s*(Reuters|Bloomberg|MarketWatch|Google News|AP|AFP|Yahoo|CNBC).*$",
-                    "", entry.title.strip(), flags=re.IGNORECASE
+                    "", entry.title.strip(), flags=re.IGNORECASE,
                 )
                 link = entry.get("link", "")
                 items.append({
@@ -162,18 +250,28 @@ def main():
             arrow = "▲" if v["change_pct"] >= 0 else "▼"
             print(f"  {v['name']}: {v['price']} {arrow}{abs(v['change_pct']):.2f}%")
 
+    print("Ophalen sectorprestaties...")
+    sectors = fetch_sector_performance()
+    print(f"  {len(sectors)} sectoren opgehaald")
+
+    print("Ophalen earnings-agenda...")
+    earnings = fetch_earnings_calendar(portfolio, days_ahead=7)
+    print(f"  {len(earnings)} earnings komende week: {[e['ticker'] for e in earnings]}")
+
     print("Ophalen marktnieuws...")
     market_news = fetch_market_news()
     print(f"  {len(market_news)} berichten gevonden")
 
     print("Ophalen portfolionieuws...")
     portfolio_news = fetch_portfolio_news(portfolio)
-    print(f"  {len(portfolio_news)} portfolio-alertsen gevonden: {list(portfolio_news.keys())}")
+    print(f"  {len(portfolio_news)} portfolio-alerts: {list(portfolio_news.keys())}")
 
     with open("data/market_data.json", "w", encoding="utf-8") as f:
         json.dump({
             "date": now_utc().isoformat(),
             "indices": indices,
+            "sectors": sectors,
+            "earnings_agenda": earnings,
             "market_news": market_news,
             "portfolio_news": portfolio_news,
             "portfolio": portfolio,
