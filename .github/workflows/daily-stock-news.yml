@@ -1,31 +1,50 @@
-name: Daily Stock News Email
+name: Dagelijkse Beursbriefing
 
 on:
   schedule:
-    # Run every day at 20:00 (8 PM) UTC
-    # Adjust timezone if needed: UTC+1 = 19:00, UTC+2 = 18:00
-    - cron: '0 20 * * *'
-  workflow_dispatch:  # Allow manual trigger
+    # 06:00 UTC = 08:00 CEST (UTC+2), alleen werkdagen
+    - cron: '0 6 * * 1-5'
+  workflow_dispatch:  # handmatige trigger voor testen
+
+permissions:
+  contents: write  # nodig voor git commit + push van email_final.html
 
 jobs:
-  send-news:
+  briefing:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Installeer dependencies
         run: pip install -r requirements.txt
 
-      - name: Run daily news script
+      - name: Stap 1 — Haal koersen en nieuws op
+        run: python fetch_news.py
+
+      - name: Stap 2 — Analyseer via GitHub Models en genereer email
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python analyze_and_generate.py
+
+      - name: Commit email_final.html naar repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add email_final.html
+          git diff --staged --quiet || git commit -m "Auto: beursbrief $(date +%Y-%m-%d)"
+          git push origin HEAD
+
+      - name: Stap 3 — Verstuur email via Gmail
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python daily_stock_news.py
+        run: python send_email.py
