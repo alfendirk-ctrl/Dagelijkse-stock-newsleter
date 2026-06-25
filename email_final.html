@@ -21,6 +21,9 @@ body{font-family:Arial,Helvetica,sans-serif;background:#e8e8e8;margin:0;padding:
 h2{font-size:10px;font-weight:700;letter-spacing:.12em;color:#999;
    text-transform:uppercase;margin:22px 0 10px;
    border-bottom:1px solid #eee;padding-bottom:7px}
+.day-summary{background:#f4f6fb;border-left:4px solid #1c2340;
+             padding:13px 16px;margin:16px 0 4px;border-radius:0 4px 4px 0;
+             font-size:13px;color:#333;line-height:1.65}
 .sector-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .sector-chip{font-size:11px;font-weight:600;padding:4px 9px;border-radius:12px;white-space:nowrap}
 .agenda-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
@@ -42,9 +45,9 @@ table.pt td{padding:7px 6px 7px 0;border-bottom:1px solid #f4f4f4;vertical-align
         padding:3px 6px;border-radius:3px;white-space:nowrap}
 .sent{display:inline-block;font-size:9px;font-weight:700;
       padding:3px 6px;border-radius:3px;white-space:nowrap}
-.td-name{color:#333;font-weight:500;white-space:nowrap}
+.td-name{color:#888;font-size:10px;display:block;margin-top:2px}
 .td-pct{color:#777;white-space:nowrap}
-.td-wat{color:#333;font-size:11px;line-height:1.4;max-width:200px}
+.td-wat{color:#333;font-size:11px;line-height:1.4;max-width:220px}
 .td-adv{color:#333;font-size:11px;line-height:1.4;max-width:160px}
 .btn-link{display:inline-block;font-size:9px;color:#555;border:1px solid #d0d0d0;
            padding:3px 7px;border-radius:3px;text-decoration:none;white-space:nowrap}
@@ -67,289 +70,34 @@ table.pt td{padding:7px 6px 7px 0;border-bottom:1px solid #f4f4f4;vertical-align
 </div>
 
 <div class="indices">
-<div class="ix"><div class="ix-label">S&P 500</div><div class="ix-val">7.358,22</div><div class="ix-chg red">▼ 0,10%</div></div><div class="ix"><div class="ix-label">NASDAQ</div><div class="ix-val">25.476,64</div><div class="ix-chg red">▼ 0,43%</div></div><div class="ix"><div class="ix-label">AEX</div><div class="ix-val">1.065,35</div><div class="ix-chg red">▼ 0,03%</div></div>
+<div class="ix"><div class="ix-label">S&P 500</div><div class="ix-val">7.387,36</div><div class="ix-chg green">▲ 0,40%</div></div><div class="ix"><div class="ix-label">NASDAQ</div><div class="ix-val">25.401,14</div><div class="ix-chg red">▼ 0,30%</div></div><div class="ix"><div class="ix-label">AEX</div><div class="ix-val">1.065,35</div><div class="ix-chg red">▼ 0,03%</div></div>
 </div>
 
 <div class="content">
 
-<h2>Sectorrotatie</h2><div class="sector-row"><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Industrie ▲+1.16%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Cons. discr. ▲+1.15%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Nutsbedrijven ▲+1.04%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Cons. basis ▲+0.86%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Zorg ▲+0.77%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Grondstoffen ▲+0.57%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Vastgoed ▼-0.29%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Financieel ▼-0.30%</span><span class="sector-chip" style="background:#fadbd8;color:#922b21">Technologie ▼-0.62%</span><span class="sector-chip" style="background:#fadbd8;color:#922b21">Communicatie ▼-0.68%</span><span class="sector-chip" style="background:#fadbd8;color:#922b21">Energie ▼-1.63%</span></div>
+
+
+<h2>Sectorrotatie</h2><div class="sector-row"><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Industrie ▲+3.14%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Zorg ▲+2.11%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Grondstoffen ▲+1.88%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Financieel ▲+1.57%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Nutsbedrijven ▲+0.67%</span><span class="sector-chip" style="background:#d5f5e3;color:#1d8348">Energie ▲+0.56%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Technologie ▲+0.17%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Vastgoed ▼-0.15%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Cons. basis ▼-0.19%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Communicatie ▼-0.21%</span><span class="sector-chip" style="background:#eaecee;color:#566573">Cons. discr. ▼-0.30%</span></div>
 
 
 
 <h2>Marktoverzicht</h2>
-<div class="news-item"><div class="news-title">The Wall Street equivalent of roster-cut day happens Friday. It’ll be one of the biggest volume days of the year.</div><div class="news-body">The Wall Street equivalent of roster-cut day happens Friday. It’ll be one of the biggest volume days of the year.</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/the-wall-street-equivalent-of-roster-cut-day-happens-friday-itll-be-one-of-the-biggest-volume-days-of-the-year-750e8496?mod=mw_rss_topstories">lees meer</a></div></div>
-<div class="news-item"><div class="news-title">Tesla and Waymo duel in the robotaxi race — but the company spending the most builds no cars at all</div><div class="news-body">Tesla and Waymo duel in the robotaxi race — but the company spending the most builds no cars at all</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/tesla-and-waymo-are-chasing-the-robotaxi-dream-but-the-company-spending-the-most-to-win-builds-no-cars-at-all-0d8682b9?mod=mw_rss_topstories">lees meer</a></div></div>
-<div class="news-item"><div class="news-title">Why SK Hynix’s $30 billion U.S. listing could be a double-edged sword for Micron’s stock</div><div class="news-body">Why SK Hynix’s $30 billion U.S. listing could be a double-edged sword for Micron’s stock</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/why-sk-hynixs-30-billion-u-s-listing-could-be-a-double-edged-sword-for-microns-stock-f4483b0d?mod=mw_rss_topstories">lees meer</a></div></div>
-<div class="news-item"><div class="news-title">These hidden PCE inflation triggers could force a Fed rate hike — and shock the market</div><div class="news-body">These hidden PCE inflation triggers could force a Fed rate hike — and shock the market</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/inflation-is-about-more-than-oil-these-two-hidden-triggers-could-force-a-fed-rate-hike-d9fa393e?mod=mw_rss_topstories">lees meer</a></div></div>
-<div class="news-item"><div class="news-title">Everyone on Wall Street now believes in buying the dip. That is exactly why you should worry.</div><div class="news-body">Everyone on Wall Street now believes in buying the dip. That is exactly why you should worry.</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/everyone-on-wall-street-now-believes-in-buying-the-dip-that-is-exactly-why-you-should-worry-44582465?mod=mw_rss_topstories">lees meer</a></div></div>
+<div class="news-item"><div class="news-title">These S&P 500 stocks are expected to make double-digit comebacks</div><div class="news-body">These S&P 500 stocks are expected to make double-digit comebacks</div><div class="news-src">MarketWatch &mdash; <a href="https://www.marketwatch.com/story/these-s-p-500-stocks-are-expected-to-make-double-digit-comebacks-8696a849?mod=mw_rss_topstories">lees meer</a></div></div>
 
-<h2>Portfolio &mdash; Analyse</h2>
+<h2>Portfolio &mdash; Posities om te volgen</h2>
 <table class="pt">
 <thead><tr>
-  <th>Ticker</th><th>Naam</th><th>%</th>
-  <th>Sentiment</th><th>Wat</th><th>Advies</th><th></th>
+  <th>Positie</th><th>%</th><th>Sentiment</th><th>Bevinding</th><th>Actie</th><th></th>
 </tr></thead>
 <tbody>
 <tr>
-  <td><span class="tbadge" style="background:#1b4f72">VWRL</span></td>
-  <td class="td-name">VWRL (All-World ETF)</td>
-  <td class="td-pct">8,5%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#784212">COIN</span></td>
-  <td class="td-name">Coinbase</td>
-  <td class="td-pct">7,6%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">ADBE</span></td>
-  <td class="td-name">Adobe</td>
-  <td class="td-pct">5,7%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">GOOGL</span></td>
-  <td class="td-name">Alphabet</td>
-  <td class="td-pct">4,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">SMH</span></td>
-  <td class="td-name">VanEck Semiconductors</td>
-  <td class="td-pct">4,3%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">ESPO</span></td>
-  <td class="td-name">VanEck Gaming & Esports</td>
-  <td class="td-pct">3,9%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1e3a5f">NVDA</span></td>
-  <td class="td-name">Nvidia</td>
-  <td class="td-pct">3,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#b03a2e">VOW3</span></td>
-  <td class="td-name">Volkswagen</td>
-  <td class="td-pct">3,7%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#784212">NFLX</span></td>
-  <td class="td-name">Netflix</td>
-  <td class="td-pct">3,6%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">SHELL</span></td>
-  <td class="td-name">Shell</td>
-  <td class="td-pct">3,0%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#7d6608">ORCL</span></td>
-  <td class="td-name">Oracle</td>
-  <td class="td-pct">2,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#784212">PYPL</span></td>
-  <td class="td-name">PayPal</td>
-  <td class="td-pct">2,7%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1e3a5f">QLYS</span></td>
-  <td class="td-name">Qualys</td>
-  <td class="td-pct">2,7%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#7d6608">AMZN</span></td>
-  <td class="td-name">Amazon</td>
-  <td class="td-pct">2,4%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#784212">DIS</span></td>
-  <td class="td-name">Walt Disney</td>
-  <td class="td-pct">2,0%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#b03a2e">PLTR</span></td>
-  <td class="td-name">Palantir</td>
+  <td><span class="tbadge" style="background:#1a5276">NKE</span><br>
+      <span class="td-name">Nike</span></td>
   <td class="td-pct">1,9%</td>
   <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">NKE</span></td>
-  <td class="td-name">Nike</td>
-  <td class="td-pct">1,9%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="https://finance.yahoo.com/m/3e1f1a20-cf73-3704-8da8-b0e0b3f406c2/nike%E2%80%99s-new-cfo-won%E2%80%99t-speed-up.html?.tsrc=rss" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1b4f72">SBUX</span></td>
-  <td class="td-name">Starbucks</td>
-  <td class="td-pct">1,9%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">DUOL</span></td>
-  <td class="td-name">Duolingo</td>
-  <td class="td-pct">1,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1e3a5f">ULVR</span></td>
-  <td class="td-name">Unilever</td>
-  <td class="td-pct">1,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">NVO</span></td>
-  <td class="td-name">Novo Nordisk ADR</td>
-  <td class="td-pct">1,5%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="https://stocktwits.com/news-articles/markets/equity/vktx-bulls-q3-obesity-data-novo-big-pharma-buyout/cZ1G5RqR7QQ?.tsrc=rss" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">ALFEN</span></td>
-  <td class="td-name">Alfen</td>
-  <td class="td-pct">1,4%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">KO</span></td>
-  <td class="td-name">Coca-Cola</td>
-  <td class="td-pct">1,2%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#784212">NIO</span></td>
-  <td class="td-name">NIO ADR</td>
-  <td class="td-pct">0,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#1a5276">T</span></td>
-  <td class="td-name">AT&T</td>
-  <td class="td-pct">0,8%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#145a32">HPQ</span></td>
-  <td class="td-name">HP Inc</td>
-  <td class="td-pct">0,5%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">FIGMA</span></td>
-  <td class="td-name">Figma</td>
-  <td class="td-pct">0,4%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">PINS</span></td>
-  <td class="td-name">Pinterest</td>
-  <td class="td-pct">0,4%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="#" class="btn-link">bericht</a></td>
-</tr>
-<tr>
-  <td><span class="tbadge" style="background:#5b2c6f">SNAP</span></td>
-  <td class="td-name">Snap</td>
-  <td class="td-pct">0,3%</td>
-  <td><span class="sent" style="background:#eaecee;color:#566573;">NEUTRAAL</span></td>
-  <td class="td-wat">Geen materieel nieuws vandaag.</td>
-  <td class="td-adv">HOLD — Geen actie vereist.</td>
-  <td><a href="https://uk.finance.yahoo.com/news/youtube-settles-social-media-addiction-102800056.html?.tsrc=rss" class="btn-link">bericht</a></td>
+  <td class="td-wat"></td>
+  <td class="td-adv"></td>
+  <td><a href="https://www.retail-insight-network.com/news/nike-appoints-david-denton-new-cfo/?.tsrc=rss" class="btn-link">bericht</a></td>
 </tr>
 </tbody>
 </table>
