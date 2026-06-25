@@ -33,8 +33,8 @@ SENTIMENT_CSS = {
 
 DEFAULT_ANALYSIS = {
     "sentiment": "NEUTRAAL",
-    "wat": "Geen materieel nieuws vandaag.",
-    "advies": "HOLD — Geen actie vereist.",
+    "wat": "",
+    "advies": "",
 }
 
 
@@ -72,22 +72,61 @@ def extract_json(text, array=False):
     return None
 
 
+def generate_day_summary(client, indices, sectors, market_news, portfolio_news, earnings):
+    """AI writes a 3-4 sentence Dutch intro summarizing the day for this portfolio."""
+    index_lines = []
+    for idx in indices.values():
+        if idx:
+            arrow = "▲" if idx["change_pct"] >= 0 else "▼"
+            index_lines.append(f"{idx['name']}: {arrow}{abs(idx['change_pct']):.2f}%")
+
+    sector_summary = ""
+    if sectors:
+        sorted_s = sorted(sectors.items(), key=lambda x: x[1]["change_pct"], reverse=True)
+        best = [(n, s) for n, s in sorted_s if s["change_pct"] > 0][:2]
+        worst = [(n, s) for n, s in sorted_s if s["change_pct"] < 0][-2:]
+        parts = []
+        if best:
+            parts.append("Koploper: " + ", ".join(f"{n} +{s['change_pct']:.1f}%" for n, s in best))
+        if worst:
+            parts.append("Achterblijver: " + ", ".join(f"{n} {s['change_pct']:.1f}%" for n, s in worst))
+        sector_summary = ". ".join(parts)
+
+    news_titles = "\n".join(f"- {n['title']}" for n in market_news[:3]) or "Geen"
+    alerts = "\n".join(f"- {t}: {i['title']}" for t, i in portfolio_news.items()) or "Geen"
+    earn_str = ", ".join(f"{e['ticker']} ({e['date']})" for e in earnings) if earnings else "Geen"
+
+    result = chat(client, (
+        "Schrijf een beknopte dagelijkse marktsamenvatting in 3-4 zinnen in het Nederlands. "
+        "Schrijf alsof je een persoonlijke financieel adviseur bent. "
+        "Verwerk de marktcontext en geef aan wat dit betekent voor een tech-zwaar portfolio "
+        "(aandelen als NVDA, COIN, ADBE, GOOGL, NFLX, ORCL). "
+        "Eindig met één concrete tip of aandachtspunt voor vandaag.\n\n"
+        f"INDICES: {', '.join(index_lines) or 'Niet beschikbaar'}\n"
+        f"SECTOREN: {sector_summary or 'Niet beschikbaar'}\n"
+        f"MARKTNIEUWS:\n{news_titles}\n"
+        f"PORTFOLIO-ALERTS:\n{alerts}\n"
+        f"EARNINGS DEZE WEEK: {earn_str}\n\n"
+        "Samenvatting (3-4 zinnen):"
+    ), max_tokens=280)
+    return result
+
+
 def summarize_market_news(client, news_items):
     """Batch-summarize all market news in one AI call."""
     if not news_items:
         return
     lines = []
     for i, n in enumerate(news_items, 1):
-        lines.append(f"{i}. TITEL: {n['title']}\n   INHOUD: {(n.get('content') or '')[:500]}")
+        lines.append(f"{i}. TITEL: {n['title']}\n   INHOUD: {(n.get('content') or '')[:400]}")
 
     raw = chat(client, (
-        "Geef voor elk bericht hieronder een bondige samenvatting (2-3 zinnen, Nederlands). "
-        "Focus op wat het betekent voor een particuliere belegger. "
-        "Wees direct en concreet. Begin meteen met de kern.\n"
-        "Antwoord uitsluitend met een JSON-array (geen uitleg, geen markdown):\n"
-        '[{"index":1,"samenvatting":"..."},{"index":2,"samenvatting":"..."}]\n\n'
+        "Geef voor elk bericht hieronder een bondige samenvatting (2 zinnen, Nederlands). "
+        "Focus op wat het betekent voor een belegger. Wees direct en concreet.\n"
+        "Antwoord uitsluitend met een JSON-array:\n"
+        '[{"index":1,"samenvatting":"..."}]\n\n'
         + "\n\n".join(lines)
-    ), max_tokens=600)
+    ), max_tokens=500)
 
     result = extract_json(raw, array=True)
     if result:
@@ -97,42 +136,25 @@ def summarize_market_news(client, news_items):
                 n["summary"] = mapping[i]
 
 
-def analyze_portfolio_batch(client, portfolio, portfolio_news, sectors, market_news):
-    """Single AI call analyzing all positions with macro + sector context."""
-    sector_lines = []
-    if sectors:
-        sorted_sectors = sorted(sectors.items(), key=lambda x: x[1]["change_pct"], reverse=True)
-        for name, s in sorted_sectors:
-            arrow = "▲" if s["change_pct"] >= 0 else "▼"
-            sector_lines.append(f"  {name}: {arrow}{abs(s['change_pct']):.2f}%")
-
-    macro_context = "SECTORPRESTATIES VANDAAG:\n" + "\n".join(sector_lines) if sector_lines else ""
-    if market_news:
-        macro_context += "\n\nMARKTNIEUWS:\n" + "\n".join(
-            f"- {n['title']}" for n in market_news[:3]
-        )
-
-    positions_lines = []
-    for pos in portfolio:
+def _analyze_chunk(client, chunk, portfolio_news, macro_context):
+    """Analyze up to 10 positions in one AI call."""
+    lines = []
+    for pos in chunk:
         ticker = pos["ticker"]
         news = portfolio_news.get(ticker)
         if news:
-            positions_lines.append(
-                f"- {ticker} ({pos['pct']}%): [NIEUWS] {news['title']}"
-            )
+            lines.append(f"- {ticker} ({pos['pct']}%): [NIEUWS] {news['title']}")
         else:
-            positions_lines.append(f"- {ticker} ({pos['pct']}%): [geen eigen nieuws]")
+            lines.append(f"- {ticker} ({pos['pct']}%): [geen nieuws]")
 
     raw = chat(client, (
-        "Je bent een ervaren beleggingsadviseur. Analyseer alle onderstaande portfolio-posities.\n"
-        "Voor posities MET nieuws: analyseer dat specifieke nieuws.\n"
-        "Voor posities ZONDER nieuws: beoordeel op basis van de macro-context en sectorrotatie.\n\n"
-        + macro_context + "\n\nPORTFOLIO-POSITIES:\n" + "\n".join(positions_lines) + "\n\n"
-        "Antwoord uitsluitend met een JSON-array voor ELKE positie (geen uitleg, geen markdown):\n"
-        '[{"ticker":"AAPL","sentiment":"BULLISH of BEARISH of NEUTRAAL",'
-        '"wat":"1-2 zinnen wat er speelt",'
-        '"advies":"HOLD/MONITOR/BUY/SELL — 1 zin reden"}]'
-    ), max_tokens=4000)
+        "Je bent beleggingsadviseur. Analyseer elke positie hieronder.\n"
+        "MET nieuws: analyseer dat nieuws specifiek.\n"
+        "ZONDER nieuws: beoordeel op macro/sector. Geef NEUTRAAL als er niets relevant is.\n\n"
+        + macro_context + "\n\nPOSITIES:\n" + "\n".join(lines) + "\n\n"
+        "JSON-array voor ELKE positie (geen uitleg, geen markdown):\n"
+        '[{"ticker":"X","sentiment":"BULLISH/BEARISH/NEUTRAAL","wat":"1-2 zinnen","advies":"HOLD/MONITOR/BUY/SELL — reden"}]'
+    ), max_tokens=1500)
 
     result = extract_json(raw, array=True)
     analyses = {}
@@ -144,32 +166,65 @@ def analyze_portfolio_batch(client, portfolio, portfolio_news, sectors, market_n
                 sent = "NEUTRAAL"
             analyses[ticker] = {
                 "sentiment": sent,
-                "wat": item.get("wat", DEFAULT_ANALYSIS["wat"]),
-                "advies": item.get("advies", DEFAULT_ANALYSIS["advies"]),
+                "wat": item.get("wat", ""),
+                "advies": item.get("advies", ""),
             }
     return analyses
 
 
-def build_watchlist(client, portfolio_news, market_news, sectors=None):
-    """Ask AI to pick top 3 positions to watch today."""
-    lines = [f"- {t} ({i['pct']}%): {i['title']}" for t, i in portfolio_news.items()]
+def analyze_portfolio_batch(client, portfolio, portfolio_news, sectors, market_news):
+    """Analyze all positions in chunks of 10 for reliability."""
+    sector_lines = []
+    if sectors:
+        sorted_s = sorted(sectors.items(), key=lambda x: x[1]["change_pct"], reverse=True)
+        for name, s in sorted_s:
+            arrow = "▲" if s["change_pct"] >= 0 else "▼"
+            sector_lines.append(f"  {name}: {arrow}{s['change_pct']:+.2f}%")
+
+    macro_context = ""
+    if sector_lines:
+        macro_context = "SECTORPRESTATIES:\n" + "\n".join(sector_lines)
+    if market_news:
+        macro_context += "\n\nMARKTNIEUWS:\n" + "\n".join(
+            f"- {n['title']}" for n in market_news[:3]
+        )
+
+    CHUNK = 10
+    chunks = [portfolio[i:i + CHUNK] for i in range(0, len(portfolio), CHUNK)]
+    analyses = {}
+    for i, chunk in enumerate(chunks, 1):
+        print(f"  Chunk {i}/{len(chunks)} ({len(chunk)} posities)...")
+        analyses.update(_analyze_chunk(client, chunk, portfolio_news, macro_context))
+    return analyses
+
+
+def build_watchlist(client, portfolio_news, portfolio_analyses, market_news, sectors=None):
+    """Ask AI to pick top 3 positions to watch today from positions with something to say."""
+    lines = []
+
+    # Positions with own news
+    for t, i in portfolio_news.items():
+        lines.append(f"- {t} ({i['pct']}%): {i['title']}")
+
+    # Positions with BULLISH/BEARISH sentiment (not already in news)
+    for ticker, an in portfolio_analyses.items():
+        if ticker not in portfolio_news and an.get("sentiment") in ("BULLISH", "BEARISH"):
+            lines.append(f"- {ticker}: {an['wat'][:80]}")
 
     if market_news:
         lines += ["\nMarktnieuws:"] + [f"- {n['title']}" for n in market_news[:3]]
 
     if sectors:
         sorted_s = sorted(sectors.items(), key=lambda x: abs(x[1]["change_pct"]), reverse=True)
-        top_movers = [f"{name} {'+' if s['change_pct']>=0 else ''}{s['change_pct']:.1f}%"
-                      for name, s in sorted_s[:3]]
-        lines += ["\nSterkste sectorbewegingen vandaag: " + ", ".join(top_movers)]
+        movers = [f"{n} {s['change_pct']:+.1f}%" for n, s in sorted_s[:3]]
+        lines.append("\nSterkste sectorbewegingen: " + ", ".join(movers))
 
     if not lines:
         return []
 
     raw = chat(client, (
-        "Je bent een beleggingsadviseur. Welke 3 portfolio-posities verdienen vandaag "
-        "de meeste aandacht op basis van dit nieuws en de sectorbeweging? "
-        "Antwoord uitsluitend met een JSON-array (geen uitleg, geen markdown):\n"
+        "Je bent beleggingsadviseur. Welke 3 posities verdienen vandaag de meeste aandacht? "
+        "Antwoord uitsluitend met een JSON-array:\n"
         '[{"ticker":"COIN","pct":7.6,"categorie":"Crypto",'
         '"beschrijving":"2-3 zinnen wat er speelt",'
         '"actie":"concrete actie voor vandaag"}]\n\n'
@@ -231,10 +286,9 @@ def render_sectors(sectors):
         else:
             bg, col = "#eaecee", "#566573"
         arrow = "▲" if chg >= 0 else "▼"
-        sign = "+" if chg >= 0 else ""
         chips.append(
             f'<span class="sector-chip" style="background:{bg};color:{col}">'
-            f'{name} {arrow}{sign}{chg:.2f}%</span>'
+            f'{name} {arrow}{chg:+.2f}%</span>'
         )
     return '<div class="sector-row">' + "".join(chips) + "</div>"
 
@@ -246,14 +300,11 @@ def render_agenda(earnings):
     for e in earnings:
         days = e.get("days_away", 0)
         if days == 0:
-            label = "VANDAAG"
-            bg, col = "#fdebd0", "#935116"
+            label, bg, col = "VANDAAG", "#fdebd0", "#935116"
         elif days == 1:
-            label = "MORGEN"
-            bg, col = "#fef9e7", "#9a7d0a"
+            label, bg, col = "MORGEN", "#fef9e7", "#9a7d0a"
         else:
-            label = f"over {days}d"
-            bg, col = "#eaecee", "#566573"
+            label, bg, col = f"over {days}d", "#eaecee", "#566573"
         badges.append(
             f'<span class="agenda-badge" style="background:{bg};color:{col}">'
             f'<b>{e["ticker"]}</b> <span style="opacity:.7">{e["date"][5:]}</span> '
@@ -269,14 +320,16 @@ def render_portfolio_row(pos, analysis, link):
     sent_css = SENTIMENT_CSS.get(sent, SENTIMENT_CSS["NEUTRAAL"])
     color = badge_color(ticker)
     pct_str = f"{pct:.1f}".replace(".", ",")
+    link_btn = (f'<a href="{link}" class="btn-link">bericht</a>'
+                if link and link != "#" else "")
     return f"""<tr>
-  <td><span class="tbadge" style="background:{color}">{ticker}</span></td>
-  <td class="td-name">{pos['name']}</td>
+  <td><span class="tbadge" style="background:{color}">{ticker}</span><br>
+      <span class="td-name">{pos['name']}</span></td>
   <td class="td-pct">{pct_str}%</td>
   <td><span class="sent" style="{sent_css}">{sent}</span></td>
   <td class="td-wat">{analysis.get('wat', '—')}</td>
   <td class="td-adv">{analysis.get('advies', '—')}</td>
-  <td><a href="{link or '#'}" class="btn-link">bericht</a></td>
+  <td>{link_btn}</td>
 </tr>"""
 
 
@@ -309,6 +362,9 @@ body{font-family:Arial,Helvetica,sans-serif;background:#e8e8e8;margin:0;padding:
 h2{font-size:10px;font-weight:700;letter-spacing:.12em;color:#999;
    text-transform:uppercase;margin:22px 0 10px;
    border-bottom:1px solid #eee;padding-bottom:7px}
+.day-summary{background:#f4f6fb;border-left:4px solid #1c2340;
+             padding:13px 16px;margin:16px 0 4px;border-radius:0 4px 4px 0;
+             font-size:13px;color:#333;line-height:1.65}
 .sector-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .sector-chip{font-size:11px;font-weight:600;padding:4px 9px;border-radius:12px;white-space:nowrap}
 .agenda-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
@@ -330,9 +386,9 @@ table.pt td{padding:7px 6px 7px 0;border-bottom:1px solid #f4f4f4;vertical-align
         padding:3px 6px;border-radius:3px;white-space:nowrap}
 .sent{display:inline-block;font-size:9px;font-weight:700;
       padding:3px 6px;border-radius:3px;white-space:nowrap}
-.td-name{color:#333;font-weight:500;white-space:nowrap}
+.td-name{color:#888;font-size:10px;display:block;margin-top:2px}
 .td-pct{color:#777;white-space:nowrap}
-.td-wat{color:#333;font-size:11px;line-height:1.4;max-width:200px}
+.td-wat{color:#333;font-size:11px;line-height:1.4;max-width:220px}
 .td-adv{color:#333;font-size:11px;line-height:1.4;max-width:160px}
 .btn-link{display:inline-block;font-size:9px;color:#555;border:1px solid #d0d0d0;
            padding:3px 7px;border-radius:3px;text-decoration:none;white-space:nowrap}
@@ -347,7 +403,19 @@ table.pt td{padding:7px 6px 7px 0;border-bottom:1px solid #f4f4f4;vertical-align
 """
 
 
-def generate_html(data, portfolio_analyses, watchlist):
+def _is_notable(ticker, analysis, portfolio_news):
+    """Return True if a position deserves a row in the portfolio table."""
+    if ticker in portfolio_news:
+        return True
+    if analysis.get("sentiment") in ("BULLISH", "BEARISH"):
+        return True
+    wat = analysis.get("wat", "")
+    if wat and len(wat) > 20:
+        return True
+    return False
+
+
+def generate_html(data, portfolio_analyses, watchlist, day_summary):
     today = today_long()
     indices = data.get("indices", {})
     market_news = data.get("market_news", [])
@@ -358,19 +426,19 @@ def generate_html(data, portfolio_analyses, watchlist):
 
     index_html = "".join(render_index(k, indices.get(k)) for k in ("sp500", "nasdaq", "aex"))
 
+    # Day summary
+    summary_section = (
+        f'<div class="day-summary">{day_summary}</div>'
+        if day_summary else ""
+    )
+
     # Sector rotation
     sector_html = render_sectors(sectors)
-    sector_section = (
-        f'<h2>Sectorrotatie</h2>{sector_html}'
-        if sector_html else ""
-    )
+    sector_section = f'<h2>Sectorrotatie</h2>{sector_html}' if sector_html else ""
 
     # Earnings agenda
     agenda_html = render_agenda(earnings)
-    agenda_section = (
-        f'<h2>Agenda deze week</h2>{agenda_html}'
-        if agenda_html else ""
-    )
+    agenda_section = f'<h2>Agenda deze week</h2>{agenda_html}' if agenda_html else ""
 
     # Market news
     if market_news:
@@ -386,14 +454,32 @@ def generate_html(data, portfolio_analyses, watchlist):
     else:
         news_html = '<p style="color:#aaa;font-size:12px">Geen significant marktnieuws vandaag.</p>'
 
-    # Portfolio rows (all positions)
+    # Portfolio: only show notable positions
     rows = []
     for pos in portfolio:
         ticker = pos["ticker"]
         analysis = portfolio_analyses.get(ticker, DEFAULT_ANALYSIS.copy())
-        link = portfolio_news.get(ticker, {}).get("link", "#")
+        if not _is_notable(ticker, analysis, portfolio_news):
+            continue
+        link = portfolio_news.get(ticker, {}).get("link", "")
         rows.append(render_portfolio_row(pos, analysis, link))
-    portfolio_html = "\n".join(rows)
+
+    if rows:
+        portfolio_html = "\n".join(rows)
+        portfolio_section = f"""<h2>Portfolio &mdash; Posities om te volgen</h2>
+<table class="pt">
+<thead><tr>
+  <th>Positie</th><th>%</th><th>Sentiment</th><th>Bevinding</th><th>Actie</th><th></th>
+</tr></thead>
+<tbody>
+{portfolio_html}
+</tbody>
+</table>"""
+    else:
+        portfolio_section = (
+            '<h2>Portfolio &mdash; Posities om te volgen</h2>'
+            '<p style="color:#aaa;font-size:12px">Geen bijzonderheden in het portfolio vandaag.</p>'
+        )
 
     # Watchlist
     if watchlist:
@@ -424,6 +510,8 @@ def generate_html(data, portfolio_analyses, watchlist):
 
 <div class="content">
 
+{summary_section}
+
 {sector_section}
 
 {agenda_section}
@@ -431,16 +519,7 @@ def generate_html(data, portfolio_analyses, watchlist):
 <h2>Marktoverzicht</h2>
 {news_html}
 
-<h2>Portfolio &mdash; Analyse</h2>
-<table class="pt">
-<thead><tr>
-  <th>Ticker</th><th>Naam</th><th>%</th>
-  <th>Sentiment</th><th>Wat</th><th>Advies</th><th></th>
-</tr></thead>
-<tbody>
-{portfolio_html}
-</tbody>
-</table>
+{portfolio_section}
 
 {watch_section}
 
@@ -465,27 +544,39 @@ def main():
     sectors = data.get("sectors", {})
     market_news = data.get("market_news", [])
     portfolio = data.get("portfolio", [])
+    indices = data.get("indices", {})
+    earnings = data.get("earnings_agenda", [])
 
-    print("AI-analyse marktnieuws (batch)...")
+    print("AI-samenvatting marktnieuws (batch)...")
     summarize_market_news(client, market_news)
 
-    print(f"AI-analyse portfolio (batch, {len(portfolio)} posities)...")
+    print(f"AI-analyse portfolio (chunks, {len(portfolio)} posities)...")
     portfolio_analyses = analyze_portfolio_batch(
         client, portfolio, portfolio_news, sectors, market_news
     )
     print(f"  Ontvangen analyses: {len(portfolio_analyses)}")
 
-    # Fill missing tickers with default
     for pos in portfolio:
         if pos["ticker"] not in portfolio_analyses:
             portfolio_analyses[pos["ticker"]] = DEFAULT_ANALYSIS.copy()
 
+    print("Genereren dagelijkse samenvatting...")
+    day_summary = generate_day_summary(
+        client, indices, sectors, market_news, portfolio_news, earnings
+    )
+
+    notable = [t for t, a in portfolio_analyses.items()
+               if _is_notable(t, a, portfolio_news)]
+    print(f"  Notabele posities: {notable}")
+
     print("Genereren watchlist...")
-    watchlist = build_watchlist(client, portfolio_news, market_news, sectors)
+    watchlist = build_watchlist(
+        client, portfolio_news, portfolio_analyses, market_news, sectors
+    )
     print(f"  In de gaten houden: {[w.get('ticker') for w in watchlist]}")
 
     print("Genereren email_final.html...")
-    html = generate_html(data, portfolio_analyses, watchlist)
+    html = generate_html(data, portfolio_analyses, watchlist, day_summary)
     with open("email_final.html", "w", encoding="utf-8") as f:
         f.write(html)
     print("✅ email_final.html aangemaakt")
