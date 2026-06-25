@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Stap 1: haalt koersen, sectordata, earnings-agenda en nieuws op.
-Slaat resultaat op in data/market_data.json voor de volgende stap.
+Stap 1: haalt koersen, sectordata, macro-indicatoren, portfoliokoersen,
+earnings-agenda en nieuws op. Slaat op in data/market_data.json.
 """
 
 import json
@@ -19,7 +19,6 @@ INDICES = {
     "aex":    {"ticker": "^AEX",  "name": "AEX"},
 }
 
-# SPDR sector ETFs (US market)
 SECTOR_ETFS = {
     "Technologie":   "XLK",
     "Communicatie":  "XLC",
@@ -32,6 +31,15 @@ SECTOR_ETFS = {
     "Grondstoffen":  "XLB",
     "Vastgoed":      "XLRE",
     "Nutsbedrijven": "XLU",
+}
+
+# Some tickers need exchange suffix for yfinance price data
+YFINANCE_TICKER_MAP = {
+    "VOW3":  "VOW3.DE",
+    "ALFEN": "ALFEN.AS",
+    "SHELL": "SHEL",
+    "ULVR":  "ULVR.L",
+    "VWRL":  "VWRL.L",
 }
 
 MARKET_FEEDS = [
@@ -47,6 +55,7 @@ MARKET_RELEVANCE_WORDS = [
     "loss", "index", "dow", "nasdaq", "s&p", "oil", "gold", "bond", "yield",
     "recession", "growth", "ipo", "acquisition", "merger", "dividend", "buyback",
     "central bank", "ecb", "fomc", "cpi", "pce", "jobs report", "employment",
+    "rate hike", "rate cut", "crypto", "bitcoin", "tech", "semiconductor",
     "beurs", "koers", "rente", "aandelen", "economie",
 ]
 
@@ -93,7 +102,6 @@ def fetch_index(ticker, name):
 
 
 def fetch_sector_performance():
-    """Fetch % change for each SPDR sector ETF."""
     results = {}
     tickers = list(SECTOR_ETFS.values())
     try:
@@ -114,8 +122,118 @@ def fetch_sector_performance():
     return results
 
 
+def fetch_macro_indicators():
+    """Fetch VIX (fear index), US 10Y Treasury yield, EUR/USD."""
+    MACRO = {
+        "vix":    {"ticker": "^VIX",     "name": "VIX",      "decimals": 1},
+        "us10y":  {"ticker": "^TNX",     "name": "US 10Y",   "decimals": 2},
+        "eurusd": {"ticker": "EURUSD=X", "name": "EUR/USD",  "decimals": 4},
+    }
+    results = {}
+    for key, info in MACRO.items():
+        try:
+            hist = yf.Ticker(info["ticker"]).history(period="5d")
+            # VIX and bonds have zero volume — don't filter by volume
+            if len(hist) >= 2:
+                prev = float(hist["Close"].iloc[-2])
+                curr = float(hist["Close"].iloc[-1])
+                results[key] = {
+                    "name": info["name"],
+                    "value": round(curr, info["decimals"]),
+                    "change_pct": round((curr - prev) / prev * 100, 2),
+                }
+            elif len(hist) == 1:
+                results[key] = {
+                    "name": info["name"],
+                    "value": round(float(hist["Close"].iloc[-1]), info["decimals"]),
+                    "change_pct": 0.0,
+                }
+        except Exception as e:
+            print(f"  Fout bij {info['ticker']}: {e}")
+    return results
+
+
+def fetch_portfolio_prices(portfolio):
+    """Fetch today's % change for every portfolio position."""
+    orig_to_yf = {}
+    for pos in portfolio:
+        t = pos["ticker"]
+        orig_to_yf[t] = YFINANCE_TICKER_MAP.get(t, t)
+
+    valid = [yf_t for yf_t in orig_to_yf.values() if yf_t]
+    results = {}
+    if not valid:
+        return results
+
+    try:
+        raw = yf.download(valid, period="5d", progress=False, auto_adjust=True)
+        close = raw["Close"] if "Close" in raw else raw
+
+        for orig_t, yf_t in orig_to_yf.items():
+            if not yf_t:
+                continue
+            try:
+                if len(valid) == 1:
+                    col = close.squeeze().dropna()
+                elif yf_t in close.columns:
+                    col = close[yf_t].dropna()
+                else:
+                    continue
+                if len(col) >= 2:
+                    prev, curr = float(col.iloc[-2]), float(col.iloc[-1])
+                    results[orig_t] = round((curr - prev) / prev * 100, 2)
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"  Fout bij portfoliokoersen: {e}")
+    return results
+
+
+def fetch_52w_extremes(portfolio):
+    """Flag positions near 52-week high or low (within 5%)."""
+    alerts = {}
+    orig_to_yf = {}
+    for pos in portfolio:
+        t = pos["ticker"]
+        orig_to_yf[t] = YFINANCE_TICKER_MAP.get(t, t)
+
+    valid = [yf_t for yf_t in orig_to_yf.values() if yf_t]
+    if not valid:
+        return alerts
+
+    try:
+        raw = yf.download(valid, period="1y", progress=False, auto_adjust=True)
+        close = raw["Close"] if "Close" in raw else raw
+
+        for orig_t, yf_t in orig_to_yf.items():
+            if not yf_t:
+                continue
+            try:
+                if len(valid) == 1:
+                    col = close.squeeze().dropna()
+                elif yf_t in close.columns:
+                    col = close[yf_t].dropna()
+                else:
+                    continue
+                if len(col) < 10:
+                    continue
+                high = float(col.max())
+                low = float(col.min())
+                curr = float(col.iloc[-1])
+                pct_from_high = (curr - high) / high * 100
+                pct_from_low = (curr - low) / low * 100
+                if pct_from_high >= -5:
+                    alerts[orig_t] = {"type": "HIGH", "pct": round(pct_from_high, 1)}
+                elif pct_from_low <= 5:
+                    alerts[orig_t] = {"type": "LOW", "pct": round(pct_from_low, 1)}
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"  Fout bij 52-week extremes: {e}")
+    return alerts
+
+
 def fetch_earnings_calendar(portfolio, days_ahead=7):
-    """Fetch upcoming earnings dates for portfolio stocks."""
     upcoming = []
     today = now_utc().date()
     cutoff = today + timedelta(days=days_ahead)
@@ -127,12 +245,9 @@ def fetch_earnings_calendar(portfolio, days_ahead=7):
             cal = t.calendar
             if cal is None:
                 continue
-
-            # yfinance returns calendar as dict or DataFrame depending on version
             if hasattr(cal, "to_dict"):
                 cal = cal.to_dict()
 
-            # Try to extract earnings date
             earn_date = None
             if isinstance(cal, dict):
                 for key in ("Earnings Date", "earningsDate"):
@@ -266,9 +381,22 @@ def main():
             arrow = "▲" if v["change_pct"] >= 0 else "▼"
             print(f"  {v['name']}: {v['price']} {arrow}{abs(v['change_pct']):.2f}%")
 
+    print("Ophalen macro-indicatoren (VIX, 10Y, EUR/USD)...")
+    macro = fetch_macro_indicators()
+    for key, m in macro.items():
+        print(f"  {m['name']}: {m['value']} ({m['change_pct']:+.2f}%)")
+
     print("Ophalen sectorprestaties...")
     sectors = fetch_sector_performance()
     print(f"  {len(sectors)} sectoren opgehaald")
+
+    print("Ophalen portfoliokoersen...")
+    portfolio_prices = fetch_portfolio_prices(portfolio)
+    print(f"  {len(portfolio_prices)} koersen opgehaald")
+
+    print("Ophalen 52-weeks extremes...")
+    extremes_52w = fetch_52w_extremes(portfolio)
+    print(f"  {len(extremes_52w)} posities nabij 52w extreme: {list(extremes_52w.keys())}")
 
     print("Ophalen earnings-agenda...")
     earnings = fetch_earnings_calendar(portfolio, days_ahead=7)
@@ -286,7 +414,10 @@ def main():
         json.dump({
             "date": now_utc().isoformat(),
             "indices": indices,
+            "macro": macro,
             "sectors": sectors,
+            "portfolio_prices": portfolio_prices,
+            "extremes_52w": extremes_52w,
             "earnings_agenda": earnings,
             "market_news": market_news,
             "portfolio_news": portfolio_news,
