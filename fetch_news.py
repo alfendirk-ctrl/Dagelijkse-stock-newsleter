@@ -41,6 +41,15 @@ MARKET_FEEDS = [
     ("https://feeds.reuters.com/reuters/businessNews", "Reuters"),
 ]
 
+MARKET_RELEVANCE_WORDS = [
+    "stock", "market", "shares", "trading", "investor", "fed", "federal reserve",
+    "interest rate", "inflation", "economy", "gdp", "earnings", "revenue", "profit",
+    "loss", "index", "dow", "nasdaq", "s&p", "oil", "gold", "bond", "yield",
+    "recession", "growth", "ipo", "acquisition", "merger", "dividend", "buyback",
+    "central bank", "ecb", "fomc", "cpi", "pce", "jobs report", "employment",
+    "beurs", "koers", "rente", "aandelen", "economie",
+]
+
 MATERIAL_KEYWORDS = [
     "earnings beat", "earnings miss", "beat estimates", "missed estimates",
     "guidance raised", "guidance lowered", "outlook increased", "outlook cut",
@@ -170,12 +179,17 @@ def fetch_article(url):
         return None
 
 
+def _is_market_relevant(title):
+    tl = title.lower()
+    return any(kw in tl for kw in MARKET_RELEVANCE_WORDS)
+
+
 def fetch_market_news():
     items = []
     for url, source in MARKET_FEEDS:
         try:
             feed = feedparser.parse(url)
-            for entry in feed.entries[:6]:
+            for entry in feed.entries[:10]:
                 pd = entry.get("published_parsed")
                 if not pd:
                     continue
@@ -186,6 +200,8 @@ def fetch_market_news():
                     r"\s*[-–]\s*(Reuters|Bloomberg|MarketWatch|Google News|AP|AFP|Yahoo|CNBC).*$",
                     "", entry.title.strip(), flags=re.IGNORECASE,
                 )
+                if not _is_market_relevant(title):
+                    continue
                 link = entry.get("link", "")
                 items.append({
                     "title": title,
