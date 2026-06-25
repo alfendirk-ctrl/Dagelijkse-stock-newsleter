@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write  # nodig voor git commit + push van email_final.html
+  models: read     # nodig voor GitHub Models API (gpt-4o-mini)
 
 jobs:
   briefing:
