@@ -2,8 +2,8 @@ name: Dagelijkse Beursbriefing
 
 on:
   schedule:
-    # 06:00 UTC = 08:00 CEST (UTC+2), alleen werkdagen
-    - cron: '0 6 * * 1-5'
+    # 18:00 UTC = 20:00 CEST (UTC+2), alleen werkdagen
+    - cron: '0 18 * * 1-5'
   workflow_dispatch:  # handmatige trigger voor testen
 
 permissions:
