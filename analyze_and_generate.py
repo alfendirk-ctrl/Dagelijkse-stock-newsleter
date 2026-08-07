@@ -694,7 +694,7 @@ def generate_html(data, portfolio_analyses, watchlist, day_summary):
 </div>
 
 <div class="footer">
-  Volgende update: morgen 08:00 CEST &nbsp;&bull;&nbsp; alfendirk@gmail.com
+  Automatische update elke werkdag om 08:00 CEST &nbsp;&bull;&nbsp; alfendirk@gmail.com
 </div>
 
 </div>
